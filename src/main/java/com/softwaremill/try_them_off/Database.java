@@ -12,41 +12,41 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class Database {
 
-    private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
+  private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 
-    void start() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
-                        InvocationTargetException, InstantiationException {
-        Class.forName(DRIVER).getDeclaredConstructor().newInstance();
-        Try.withResources(
-          () -> DriverManager.getConnection("jdbc:h2:mem:measurements;DB_CLOSE_DELAY=-1")
-        )
-           .of(this::createMeasurementsTable)
-           .onFailure(exc -> log.error("Error creating table", exc))
-           .get();
-    }
+  void start() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+    InvocationTargetException, InstantiationException {
+    Class.forName(DRIVER).getDeclaredConstructor().newInstance();
+    Try.withResources(
+      () -> DriverManager.getConnection("jdbc:h2:mem:measurements;DB_CLOSE_DELAY=-1")
+    )
+      .of(this::createMeasurementsTable)
+      .onFailure(exc -> log.error("Error creating table", exc))
+      .get();
+  }
 
-    Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:h2:mem:measurements");
-    }
+  Connection getConnection() throws SQLException {
+    return DriverManager.getConnection("jdbc:h2:mem:measurements");
+  }
 
-    private String createMeasurementsTable(Connection connection) throws SQLException {
-        Statement stmt = connection.createStatement();
+  private String createMeasurementsTable(Connection connection) throws SQLException {
+    Statement stmt = connection.createStatement();
 
-        String sql = "CREATE TABLE IF NOT EXISTS MEASUREMENTS " +
-                     "(id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY," +
-                     " read_date TIMESTAMP, " +
-                     " city VARCHAR(255), " +
-                     " pm1 DECIMAL, " +
-                     " pm25 DECIMAL, " +
-                     " pm10 DECIMAL, " +
-                     " pressure DECIMAL, " +
-                     " humidity DECIMAL, " +
-                     " temperature DECIMAL, " +
-                     " PRIMARY KEY ( id ))";
+    String sql = "CREATE TABLE IF NOT EXISTS MEASUREMENTS " +
+      "(id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY," +
+      " read_date TIMESTAMP, " +
+      " city VARCHAR(255), " +
+      " pm1 DECIMAL, " +
+      " pm25 DECIMAL, " +
+      " pm10 DECIMAL, " +
+      " pressure DECIMAL, " +
+      " humidity DECIMAL, " +
+      " temperature DECIMAL, " +
+      " PRIMARY KEY ( id ))";
 
-        stmt.executeUpdate(sql);
+    stmt.executeUpdate(sql);
 
-        return "created";
-    }
+    return "created";
+  }
 
 }

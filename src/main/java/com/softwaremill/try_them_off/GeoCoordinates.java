@@ -11,8 +11,8 @@ import lombok.experimental.Accessors;
 @RequiredArgsConstructor
 class GeoCoordinates {
 
-    private final String city;
-    private final String latitude;
-    private final String longitude;
+  private final String city;
+  private final String latitude;
+  private final String longitude;
 
 }

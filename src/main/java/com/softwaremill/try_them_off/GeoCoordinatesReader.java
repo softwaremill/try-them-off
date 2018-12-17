@@ -9,21 +9,21 @@ import io.vavr.collection.Stream;
 
 class GeoCoordinatesReader {
 
-    List<GeoCoordinates> fromCsvFile(String path) throws IOException {
-        return Stream.ofAll(lines(path))
-                                  .filter(line -> !line.startsWith("#"))
-                                  .map(line -> line.split(","))
-                                  .map(this::asGeoCoordinates)
-                                  .toList();
-    }
+  List<GeoCoordinates> fromCsvFile(String path) throws IOException {
+    return Stream.ofAll(lines(path))
+      .filter(line -> !line.startsWith("#"))
+      .map(line -> line.split(","))
+      .map(this::asGeoCoordinates)
+      .toList();
+  }
 
-    private Iterable<String> lines(String fileName) throws IOException {
-        return Files.readAllLines(Paths.get(fileName));
-    }
+  private Iterable<String> lines(String fileName) throws IOException {
+    return Files.readAllLines(Paths.get(fileName));
+  }
 
-    private GeoCoordinates asGeoCoordinates(String[] geoData) {
-        return GeoCoordinates.builder().city(geoData[0]).latitude(geoData[1]).longitude(geoData[2])
-                             .build();
-    }
+  private GeoCoordinates asGeoCoordinates(String[] geoData) {
+    return GeoCoordinates.builder().city(geoData[0]).latitude(geoData[1]).longitude(geoData[2])
+      .build();
+  }
 
 }

@@ -1,5 +1,7 @@
 package com.softwaremill.try_them_off;
 
+import java.io.FileNotFoundException;
+
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +17,9 @@ class Application {
 
     Try
       .run(database::start)
-      .andThenTry(
+      .onSuccess(ignore -> log.info("Database started successfully"))
+      .onFailure(exc -> log.error("Cannot start the database", exc))
+      .andThen(
         () -> fetchMeasurements(geoCoordinatesReader, airlyService, measurementsRepository)
       );
   }
@@ -32,12 +36,8 @@ class Application {
           return result;
         }
       )
-      .filter(Try::isSuccess)
-      .map(Try::get)
-      .map(m -> measurementsRepository
-        .save(m)
-        .onSuccess(ignore -> log.info("Measurement {} saved successfully", m))
-        .onFailure(exc -> log.error("Error during saving measurement into database", exc))
+      .flatMap(t -> t)
+      .map(m -> save(measurementsRepository, m)
       );
   }
 
@@ -45,9 +45,28 @@ class Application {
     return Try.of(
       () -> geoCoordinatesReader.fromCsvFile("./src/main/resources/cities.csv")
     )
-      .onFailure(exc -> log.error("Cannot read coordinates from a file", exc))
       .onSuccess(coords -> log.info("Coordinates read: {}", coords))
+      .onFailure(exc -> log.error("Cannot read coordinates from a file", exc))
+      .recover(FileNotFoundException.class, (exc) -> provideBackupCoordinates())
       .getOrElse(List.empty());
+  }
+
+  private static List<GeoCoordinates> provideBackupCoordinates() {
+    log.warn("Calling for backup data");
+    return List.of(
+      GeoCoordinates.builder()
+        .city("Warszawa")
+        .latitude("52.25")
+        .longitude("21")
+        .build()
+    );
+  }
+
+  private static Try<Void> save(MeasurementsRepository measurementsRepository, Measurements m) {
+    return measurementsRepository
+      .save(m)
+      .onSuccess(ignore -> log.info("Measurement {} saved successfully", m))
+      .onFailure(exc -> log.error("Error during saving measurement into database", exc));
   }
 
 }
